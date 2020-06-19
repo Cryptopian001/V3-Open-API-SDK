@@ -35,17 +35,12 @@ class Client(object):
             print("url:", url)
             self.first = False
 
-        print("url:", url)
-        # print("headers:", header)
-        print("body:", body)
-
         # send request
         response = None
         if method == c.GET:
             response = requests.get(url, headers=header)
         elif method == c.POST:
             response = requests.post(url, data=body, headers=header)
-            #response = requests.post(url, json=body, headers=header)
         elif method == c.DELETE:
             response = requests.delete(url, headers=header)
 

@@ -22,13 +22,14 @@ class OkexWebsocket(object):
     URL: str = 'wss://real.OKEx.com:8443/ws/v3'
     ws: websocket.WebSocketApp
 
-    def __init__(self, url, api_key, api_secret_key, passphrase):
+    def __init__(self, url, api_key=None, api_secret_key=None, passphrase=None):
         self.url = url
         self.api_key = api_key
         self.api_secret_key = api_secret_key
         self.passphrase = passphrase
         self.thread = None
-        self.handlers: Dict[str, list] = defaultdict(lambda: [])
+        self.public_handlers: Dict[str, list] = defaultdict(lambda: [])
+        self.private_handlers: Dict[str, list] = defaultdict(lambda: [])
         self.exiting = False
         self.logger = logging.getLogger(__name__)
 
@@ -37,13 +38,18 @@ class OkexWebsocket(object):
         sign = utils.signature(timestamp, 'GET', '/users/self/verify', None, self.api_secret_key)
         self.ws.send(json.dumps({'op': 'login', 'args': [self.api_key, self.passphrase, str(timestamp), sign]}))
 
-    def subscribe(self, topic, handler):
-        current_handlers = self.handlers[topic]
+    def subscribe_public(self, topic, handler):
+        current_handlers = self.public_handlers[topic]
         if handler not in current_handlers:
-            self.handlers[topic].append(handler)
+            self.public_handlers[topic].append(handler)
+
+    def subscribe_private(self, topic, handler):
+        current_handlers = self.private_handlers[topic]
+        if handler not in current_handlers:
+            self.private_handlers[topic].append(handler)
 
     def on_close(self, handler):
-        self.handlers['on_close'].append(handler)
+        self.public_handlers['on_close'].append(handler)
 
     def connect(self):
         self.ws = websocket.WebSocketApp(url=self.url,
@@ -60,7 +66,9 @@ class OkexWebsocket(object):
     def __on_open(self):
         self.logger.info("OKEx websocket connected...")
         self.ws.send("ping")
-        self.login()
+        self.__sub_topics(list(self.public_handlers.keys()))
+        if self.api_key:
+            self.login()
 
     @staticmethod
     def match_topic(msgs, topic):
@@ -82,22 +90,25 @@ class OkexWebsocket(object):
         msgs = json.loads(inflated)
         if "event" in msgs:
             if msgs['event'] == 'login':
-                self.ws.send(json.dumps({"op": "subscribe", "args": list(self.handlers.keys())}))
+                self.__sub_topics(list(self.private_handlers.keys()))
             elif msgs['event'] == 'subscribe':
                 self.logger.info(f"OKEx channel: {msgs['channel']} subscribed.")
         elif "table" in msgs:
-            for topic, handlers in self.handlers.items():
+            for topic, handlers in self.public_handlers.items():
                 if self.match_topic(msgs, topic):
                     for handler in handlers:
                         handler(msgs)
         else:
             self.logger.info(msgs)
 
+    def __sub_topics(self, topics):
+        self.ws.send(json.dumps({"op": "subscribe", "args": topics}))
+
     def __on_close(self):
         if self.exiting:
             return
         self.logger.warning('OKEx websocket closed, reconnecting...')
-        on_close_handlers = self.handlers['on_close']
+        on_close_handlers = self.public_handlers['on_close']
         if on_close_handlers:
             for handler in on_close_handlers:
                 handler()

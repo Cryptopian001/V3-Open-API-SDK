@@ -1,6 +1,4 @@
 # coding=utf-8
-import json
-
 class OkexAPIException(Exception):
 
     def __init__(self, response):
