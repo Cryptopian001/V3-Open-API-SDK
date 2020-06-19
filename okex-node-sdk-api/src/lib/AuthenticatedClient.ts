@@ -205,6 +205,9 @@ export function AuthenticatedClient(
           readonly limit?: string;
         }): Promise<any> {
           return get(`/api/spot/v3/fills?${querystring.stringify(params)}`);
+        },
+        async getTradeFee(): Promise<any> {
+          return get(`/api/spot/v3/trade_fee`);
         }
       };
     },
@@ -507,6 +510,9 @@ export function AuthenticatedClient(
         },
         async getHolds(instrument_id: string): Promise<any> {
           return get(`/api/futures/v3/accounts/${instrument_id}/holds`);
+        },
+        async getTradeFee(): Promise<any> {
+          return get(`/api/futures/v3/trade_fee`);
         }
       };
     },
@@ -600,6 +606,9 @@ export function AuthenticatedClient(
           readonly limit?: string;
         }): Promise<any> {
           return get(`/api/swap/v3/fills?${querystring.stringify(params)}`);
+        },
+        async getTradeFee(): Promise<any> {
+          return get(`/api/swap/v3/trade_fee`);
         }
       };
     },
