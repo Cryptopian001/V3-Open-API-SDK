@@ -131,5 +131,8 @@ dmypy.json
 # MAC
 .DS_Store
 
+# pycharm
+.idea
+
 # secret
 secret*.*
