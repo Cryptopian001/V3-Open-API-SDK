@@ -118,8 +118,13 @@ class SpotAPI(Client):
         params = {'instrument_id': instrument_id, 'algo_ids': algo_ids, 'order_type': order_type}
         return self._request_with_params(POST, SPOT_CANCEL_ALGOS, params)
 
-    def get_trade_fee(self):
-        return self._request_without_params(GET, SPOT_TRADE_FEE)
+    def get_trade_fee(self, category=None, instrument_id=None):
+        params = {}
+        if category:
+            params['category'] = category
+        if instrument_id:
+            params['instrument_id'] = instrument_id
+        return self._request_with_params(GET, SPOT_TRADE_FEE, params)
 
     # get order_algos
     def get_order_algos(self, instrument_id, order_type, status='', algo_id='', before='', after='', limit=''):
