@@ -192,7 +192,7 @@ class FutureAPI(Client):
             params['category'] = category
         if underlying:
             params['underlying'] = underlying
-        return self._request_without_params(GET, FUTURE_TRADE_FEE, params)
+        return self._request_with_params(GET, FUTURE_TRADE_FEE, params)
 
     # get products info
     def get_products(self):
