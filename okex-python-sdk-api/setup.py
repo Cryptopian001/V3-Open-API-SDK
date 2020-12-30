@@ -7,7 +7,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.md"), "r") as fh:
 
 setuptools.setup(
     name="cp-okex",  # Replace with your own username
-    version="0.0.2",
+    version="0.0.3",
     author="Han Wu",
     author_email="han.wu@cryptopian.io",
     description="Cryptopian version of OKEx RESTful and WebSocket API",
